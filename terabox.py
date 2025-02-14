@@ -5,45 +5,48 @@ import asyncio
 from datetime import datetime
 from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
-from os import environ
 import os
-import time
 from status import format_progress_bar
 from video import download_video, upload_video
 from web import keep_alive
 
+# Load environment variables
 load_dotenv('config.env', override=True)
 
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 
+# Get environment variables
 api_id = os.environ.get('TELEGRAM_API', '')
-if len(api_id) == 0:
+if not api_id:
     logging.error("TELEGRAM_API variable is missing! Exiting now")
     exit(1)
 
 api_hash = os.environ.get('TELEGRAM_HASH', '')
-if len(api_hash) == 0:
+if not api_hash:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
-    
+
 bot_token = os.environ.get('BOT_TOKEN', '')
-if len(bot_token) == 0:
+if not bot_token:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
     exit(1)
+
 dump_id = os.environ.get('DUMP_CHAT_ID', '')
-if len(dump_id) == 0:
+if not dump_id:
     logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
     exit(1)
 else:
     dump_id = int(dump_id)
 
 fsub_id = os.environ.get('FSUB_ID', '')
-if len(fsub_id) == 0:
+if not fsub_id:
     logging.error("FSUB_ID variable is missing! Exiting now")
     exit(1)
 else:
     fsub_id = int(fsub_id)
 
+# Initialize the bot client
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
 @app.on_message(filters.command("start"))
@@ -57,6 +60,7 @@ async def start_command(client, message):
     developer_button = InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ ⚡️", url="https://t.me/hrishikesh2861")
     reply_markup = InlineKeyboardMarkup([[join_button, developer_button]])
     video_file_id = "/app/Jet-Mirror.mp4"
+    
     if os.path.exists(video_file_id):
         await client.send_video(
             chat_id=message.chat.id,
@@ -70,11 +74,8 @@ async def start_command(client, message):
 async def is_user_member(client, user_id):
     try:
         member = await client.get_chat_member(fsub_id, user_id)
-        logging.info(f"User {user_id} membership status: {member.status}")
-        if member.status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return True
-        else:
-            return False
+        logging.info(f"User  {user_id} membership status: {member.status}")
+        return member.status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
     except Exception as e:
         logging.error(f"Error checking membership status for user {user_id}: {e}")
         return False
@@ -96,9 +97,9 @@ async def handle_message(client, message: Message):
         return
 
     valid_domains = [
-    'terabox.com', 'nephobox.com', '4funbox.com', 'mirrobox.com', 
-    'momerybox.com', 'teraboxapp.com', '1024tera.com', 
-    'terabox.app', 'gibibox.com', 'goaibox.com', 'terasharelink.com', 'teraboxlink.com', 'terafileshare.com'
+        'terabox.com', 'nephobox.com', '4funbox.com', 'mirrobox.com', 
+        'momerybox.com', 'teraboxapp.com', '1024tera.com', 
+        'terabox.app', 'gibibox.com', 'goaibox.com', 'terasharelink.com', 'teraboxlink.com', 'terafileshare.com'
     ]
 
     terabox_link = message.text.strip()
@@ -107,14 +108,9 @@ async def handle_message(client, message: Message):
         await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ.")
         return
 
-    reply_msg = await message.reply_text("sᴇɴᴅɪɴɢ ʏᴏᴜ ᴛʜᴇ ᴍᴇᴅɪᴀ...🤤")
+    reply_msg = await message.reply_text("
 
-    try:
-        file_path, thumbnail_path, video_title = await download_video(terabox_link, reply_msg, user_mention, user_id)
-        await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, dump_id, user_mention, user_id, message)
-    except Exception as e:
-        logging.error(f"Error handling message: {e}")
-        await reply_msg.edit_text("Api has given a Broken Download Link. Dont Contact the Owner for this Issue.")
+    
 
 if __name__ == "__main__":
     keep_alive()
